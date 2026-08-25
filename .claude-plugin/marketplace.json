@@ -1,0 +1,14 @@
+{
+  "name": "kite",
+  "owner": {
+    "name": "Luigi D'Introno"
+  },
+  "plugins": [
+    {
+      "name": "kite-video",
+      "source": "./",
+      "description": "Launch-video studio: script → animated stage → rendered frames → narration, music and subtitles.",
+      "version": "1.0.0"
+    }
+  ]
+}

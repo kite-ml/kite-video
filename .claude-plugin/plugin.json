@@ -1,0 +1,11 @@
+{
+  "name": "kite-video",
+  "displayName": "Kite Video Studio",
+  "description": "Produce narrated ~55s launch and product videos in the Kite cotufa design system: animated HTML stage rendered to frames, ElevenLabs narration, beat-synced music, burned-in subtitles.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Luigi D'Introno"
+  },
+  "keywords": ["video", "launch", "marketing", "elevenlabs", "animation", "kite"],
+  "license": "UNLICENSED"
+}

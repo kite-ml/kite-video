@@ -1,0 +1,90 @@
+// Kite Evals launch video — deterministic frame renderer.
+// Drives stage/index.html's window.seek(t) in headless Chrome and screenshots
+// every frame. Also exports the per-scene hero stills (--stills).
+//
+//   node render.mjs --stills            # slide PNGs at 2x into ../out/stills
+//   node render.mjs                     # 30fps frame sequence into ../out/frames
+//   node render.mjs --from 0 --to 56    # partial render (seconds)
+//
+// If ../out/timing.json exists, output time is piecewise-linearly warped onto
+// stage time so scene boundaries can follow the measured VO durations without
+// touching the choreography. Format: { "anchors": [[outT, stageT], ...] }.
+
+import { chromium } from 'playwright-core';
+import { mkdirSync, existsSync, readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const OUT = join(HERE, '..', 'out');
+const FPS = 30;
+
+const args = process.argv.slice(2);
+const has = f => args.includes(f);
+const num = (f, d) => { const i = args.indexOf(f); return i >= 0 ? +args[i + 1] : d; };
+const str = (f, d) => { const i = args.indexOf(f); return i >= 0 ? args[i + 1] : d; };
+// --stage index2.html --frames frames2 --stills-dir stills2  (defaults = v1)
+const STAGE = 'file://' + join(HERE, '..', 'stage', str('--stage', 'index.html'));
+const FRAMES_DIR = str('--frames', 'frames');
+const STILLS_DIR = str('--stills-dir', 'stills');
+
+// ---- optional time warp (output t -> stage t) ----
+let warp = t => t;
+let outDur = null;
+const tj = join(OUT, 'timing.json');
+if (existsSync(tj)) {
+  const { anchors } = JSON.parse(readFileSync(tj, 'utf8'));
+  warp = t => {
+    for (let i = 0; i < anchors.length - 1; i++) {
+      const [o0, s0] = anchors[i], [o1, s1] = anchors[i + 1];
+      if (t <= o1 || i === anchors.length - 2)
+        return s0 + (s1 - s0) * Math.min(Math.max((t - o0) / (o1 - o0), 0), 1);
+    }
+    return anchors.at(-1)[1];
+  };
+  outDur = anchors.at(-1)[0];
+  console.log('using timing.json — output duration', outDur, 's');
+}
+
+const browser = await chromium.launch({ channel: 'chrome', headless: true });
+const page = await browser.newPage({
+  viewport: { width: 1920, height: 1080 },
+  deviceScaleFactor: has('--stills') ? 2 : 1,
+});
+await page.goto(STAGE);
+await page.evaluate(() => window.READY);
+// settle fonts/decodes
+await page.waitForTimeout(300);
+
+if (has('--stills')) {
+  mkdirSync(join(OUT, STILLS_DIR), { recursive: true });
+  const stills = await page.evaluate(() => window.STILLS);
+  for (const { name, t } of stills) {
+    await page.evaluate(t => window.seek(t), t);
+    await page.waitForTimeout(120); // let img src swaps decode
+    await page.screenshot({ path: join(OUT, STILLS_DIR, `${name}.png`), clip: { x: 0, y: 0, width: 1920, height: 1080 } });
+    console.log('still', name, '@', t);
+  }
+} else {
+  mkdirSync(join(OUT, FRAMES_DIR), { recursive: true });
+  const stageDur = await page.evaluate(() => window.DUR);
+  const dur = outDur ?? stageDur;
+  const from = num('--from', 0), to = num('--to', dur);
+  const i0 = Math.round(from * FPS), i1 = Math.round(to * FPS);
+  const t0 = Date.now();
+  for (let i = i0; i < i1; i++) {
+    const t = warp(i / FPS);
+    await page.evaluate(t => window.seek(t), t);
+    await page.screenshot({
+      path: join(OUT, FRAMES_DIR, `frame_${String(i).padStart(5, '0')}.png`),
+      clip: { x: 0, y: 0, width: 1920, height: 1080 },
+    });
+    if (i % 150 === 0) {
+      const el = (Date.now() - t0) / 1000;
+      const done = i - i0 + 1, total = i1 - i0;
+      console.log(`frame ${i}/${i1}  ${(done / total * 100).toFixed(1)}%  ${(done / el).toFixed(1)} fps  eta ${((total - done) / (done / el)).toFixed(0)}s`);
+    }
+  }
+  console.log('rendered', i1 - i0, 'frames in', ((Date.now() - t0) / 1000).toFixed(0), 's');
+}
+await browser.close();
