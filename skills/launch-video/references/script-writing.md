@@ -7,7 +7,30 @@ review rounds were copy, not craft.
 
 Deliver the script as a beat sheet (format below), in chat, and ask for line-level approval.
 
-## 1. Interview first
+## 0. Starting from an article (the usual case)
+
+When the input is an article, blog post, PRD or launch note, **the video is not a summary of it**.
+An article explains; a video makes one point land and asks for something. Extract, don't compress:
+
+1. **The pain** — the reader's status quo, usually buried in the intro. This is the hook, and it
+   must be said in the *user's* words, not the product's ("babysitting a robot", not "evaluation
+   throughput is limited").
+2. **The one claim** — the single sentence the whole piece is arguing. That's your mechanism beat.
+3. **The strongest proof** — the demo, screenshot, number or example that a skeptic would want.
+   If the article has three, pick the one you can *show* on screen; drop the rest.
+4. **The ask** — usually the article's CTA. Say it plainly.
+5. **Everything else gets cut.** A 1,200-word post has maybe 120 words of video in it. Feature
+   lists, caveats, benchmark tables and background belong in the article, not the video.
+
+Then verify every claim you kept against the source text. **Nothing enters the VO that isn't in
+the source material or confirmed by the user** — no invented metrics, customer names, or
+capabilities. If a number in the article is stale or unverifiable, cut it rather than say it
+(see the "thirty minutes" rewrite below).
+
+Finally, sanity-check what you can *show*. A claim with no footage is a headline, not a scene —
+if nothing in the asset list illustrates it, either cut the claim or ask for a recording.
+
+## 1. Interview (when there's no article, or to fill gaps)
 
 Don't draft until you can answer these. Ask them together, in one message:
 
@@ -44,7 +67,17 @@ must land before the ask.
 
 ## 3. Pacing math
 
+Budget against the **agreed length range** (a required input — never assume it):
+
+| Range | Word budget |
+|---|---|
+| 30–40s | ~75–95 words |
+| 45–60s | ~110–145 words |
+| 60–90s | ~145–215 words |
+
 - **~2.4 words/sec.** 55s of continuous VO ≈ 130 words. Count before you build.
+- Come in at the **low end** of the range: scenes stretch to fit VO, so an over-long script
+  overshoots the ceiling and forces a re-record.
 - Per line: 8–14 words. Longer lines don't fit a headline and read rushed.
 - **The hook gets one VO segment per on-screen line** (`vo0a/b/c`) so voice and text land together.
 - Mark the safest cut line in the beat sheet ("if long, cut X") — decide it while writing, not

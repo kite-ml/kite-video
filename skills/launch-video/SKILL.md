@@ -12,15 +12,29 @@ Deterministic, re-renderable, reviewable frame-by-frame.
 **Golden rule: the audio decides the timing, never the other way round.** Generate narration
 first, measure it, then warp the stage to fit. Never hand-tune scene lengths.
 
-## Phase 1 — script (do this before touching code)
+## Phase 1 — required inputs (hard gate)
 
-**Write the script and get line-level sign-off first.** It fixes the scene count, runtime, footage
-list and every timing target; copy changes after the stage exists cost a full re-render each.
-Follow [references/script-writing.md](references/script-writing.md): interview questions, the
-five-beat arc, pacing math (~2.4 words/sec), the beat-sheet format, and the line-level rules
-(no unverified numbers, no AI-flavored aphorisms, every line must stand alone).
+**Do not write code, copy assets, or generate audio until all three are in hand.** Ask for
+whatever is missing and stop; a wrong assumption here costs a full re-render later.
 
-Deliver the beat sheet in chat, ask for approval, and only then build.
+**1. Source material — required.** An article, blog post, PRD, launch note, changelog, transcript,
+or a URL. This is the factual ground for every claim in the video.
+*Do not invent product capabilities, numbers, or customer names.* If the user offers nothing,
+either ask for a link/file or run the interview in
+[references/script-writing.md](references/script-writing.md) — but do not proceed on vibes.
+
+**2. Length range — required.** Ask for it as a range (e.g. "45–60s"). It sets the word budget
+(~2.4 words/sec ⇒ 50s ≈ 120 words) and the per-scene targets in `compute-timing.mjs`'s `TGT`.
+Default to **50–60s** only if the user explicitly says "whatever you think".
+
+**3. Script confirmation — required.** Write the beat sheet from the source material, post it in
+chat, and get **line-level approval before building**. Not "looks good" on a summary — the actual
+VO lines, because those are what get spoken and rendered. Re-confirm after any copy change.
+
+Also useful, ask early: what footage exists (see Assets), and who the audience is.
+
+Then follow [references/script-writing.md](references/script-writing.md) — deriving a script from
+an article, the five-beat arc, pacing math, and the line-level copy rules.
 
 ## The design system: cotufa
 
