@@ -3,6 +3,19 @@
 Settled over the Kite Evals launch video (~15 review rounds). These are defaults, not laws —
 but change them deliberately, and never re-litigate them from scratch.
 
+## Source of truth: cotufa
+
+Read **`graphics/BRAND.md`** (the cotufa playbook, live at <https://kiteml.com/brand-playbook>)
+before authoring; tokens come from `graphics/dist/theme.css`. Everything below is how that brand
+behaves *in motion* — the playbook's four principles decide most of it:
+
+| Cotufa principle | What it means in a video |
+|---|---|
+| **Control** — IDE-grade precision | Real UI, real episode ids and camera keys in mono; nothing decorative that isn't functional. |
+| **Motion** — "shown moving, not posed" | A camera that never sits still, transitions that carry the subject, real rollout footage over stills. |
+| **Trust** — monochrome restraint, product proof before decoration | Paper/ink grounds, no gradient washes, and the product-UI beat gets the most screen time. |
+| **Frontier** — signal color appears rarely, so it feels earned | Signal palette for data only (pass/fail), one hairline rail per card, the gradient period after "Bring one policy". |
+
 ## Motion language
 
 The reference is the ElevenLabs launch films: **one continuous canvas the camera moves across**,
@@ -68,8 +81,11 @@ not a slideshow of scenes.
 
 ## Typography & color (cotufa)
 
-- Google Sans Flex for all display copy; JetBrains Mono for metadata/UI chrome only
-  (episode ids, camera keys, stat strips). **End card is all Google Sans** — no mono.
+Tokens live in `graphics/dist/theme.css` — copy them, don't retype them.
+
+- Google Sans for all display copy; JetBrains Mono is "the voice of the machine" — state, metrics,
+  paths, logs, episode ids, camera keys — **never body copy**. **End card is all Google Sans.**
+  (The stage bundles `GoogleSansFlex` woff2 locally for deterministic headless rendering.)
 - Headlines: 46px/1.18, `letter-spacing:-0.05em`, `text-wrap:balance`, `max-width:1460px`.
 - Two grounds: **ink** (`#0a0a0a` mesh + dots motif + grain) for hook/closer; **paper**
   (`--background`, dashed rails) for the product world.

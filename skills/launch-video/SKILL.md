@@ -1,6 +1,6 @@
 ---
 name: launch-video
-description: Produce a narrated ~55s launch/product video in the Kite cotufa design system — animated HTML stage rendered to frames, ElevenLabs narration in Luigi's voice, beat-synced music, burned-in subtitles. Use whenever Luigi wants a launch video, product video, announcement video, demo video, teaser, or wants an existing one re-cut, re-voiced, or re-timed, even if he never says "skill".
+description: Produce a narrated ~55s launch/product video in Kite's cotufa design system (graphics/ submodule, @kite-ml/cotufa) — animated HTML stage rendered to frames, ElevenLabs narration in Luigi's voice, beat-synced music, burned-in subtitles. Use whenever Luigi wants a launch video, product video, announcement video, demo video, teaser, or wants an existing one re-cut, re-voiced, or re-timed, even if he never says "skill".
 ---
 
 # Launch video
@@ -21,6 +21,36 @@ five-beat arc, pacing math (~2.4 words/sec), the beat-sheet format, and the line
 (no unverified numbers, no AI-flavored aphorisms, every line must stand alone).
 
 Deliver the beat sheet in chat, ask for approval, and only then build.
+
+## The design system: cotufa
+
+**Cotufa is the source of truth for every visual decision** — never invent tokens, colors, or type
+scales. It ships as `@kite-ml/cotufa` (<https://github.com/kite-ml/cotufa>), vendored in most Kite
+projects as the `graphics/` submodule:
+
+| What | Where |
+|---|---|
+| Brand playbook (principles, logo, type, color, motion) | `graphics/BRAND.md` · live at <https://kiteml.com/brand-playbook> |
+| CSS custom properties | `graphics/dist/theme.css` (`--background`, `--foreground`, `--font-sans`, `--signal-*`) |
+| Machine-readable tokens | `graphics/src/brand.ts` |
+| Components / graphics helpers | `graphics/dist/brand.css`, `graphics/dist/graphics.css` |
+
+If the project has no `graphics/`: `git submodule add https://github.com/kite-ml/cotufa graphics`
+(or `npm i @kite-ml/cotufa`), then read `BRAND.md` before authoring.
+
+**The stage inlines the tokens** in a `:root` block because a `file://` page can't resolve package
+imports — but they must be *copied* from `graphics/dist/theme.css`, not typed from memory. Check
+them against the current theme when starting a project:
+
+```bash
+grep -E -- '--(background|foreground|muted|border|popover|font|signal)' graphics/dist/theme.css
+```
+
+Fonts are bundled as local `woff2` in `stage/assets/fonts/` so headless renders are deterministic
+and never fall back mid-render.
+
+The brand principles map directly onto how this video is cut — see
+[references/decisions.md](references/decisions.md), which records the specific calls made under them.
 
 ## Phase 2 — build
 
