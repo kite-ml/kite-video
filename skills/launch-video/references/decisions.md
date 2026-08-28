@@ -16,6 +16,11 @@ behaves *in motion* — the playbook's four principles decide most of it:
 | **Trust** — monochrome restraint, product proof before decoration | Paper/ink grounds, no gradient washes, and the product-UI beat gets the most screen time. |
 | **Frontier** — signal color appears rarely, so it feels earned | Signal palette for data only (pass/fail), one hairline rail per card, the gradient period after "Bring one policy". |
 
+> **When the video is about a shipped page** (a benchmark, a launch post), there's a second source
+> of truth: the page itself. See [site-fidelity.md](site-fidelity.md) — reproduce its real
+> components in motion rather than composing new ones from the primitives. The motion language
+> below still governs how those components enter and move.
+
 ## Motion language
 
 The reference is the ElevenLabs launch films: **one continuous canvas the camera moves across**,

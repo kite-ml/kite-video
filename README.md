@@ -38,6 +38,7 @@ skills/launch-video/
   SKILL.md                      the workflow: script → build → pipeline → review gates
   references/
     script-writing.md           interview, five-beat arc, pacing math, line-level copy rules
+    site-fidelity.md            reproduce a shipped page in motion: real components, cover intro
     decisions.md                settled design decisions + what was rejected and why
     stage-authoring.md          the seek(t) contract, camera model, timing bridge
     assets.md                   footage prep, vetted Hugging Face robot datasets, audit rule

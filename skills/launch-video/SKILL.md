@@ -73,8 +73,13 @@ The brand principles map directly onto how this video is cut — see
 2. **Read [references/decisions.md](references/decisions.md)** — the design decisions already
    settled (motion language, scene grammar, typography, what got rejected and why). Apply them
    by default; don't rediscover them.
-3. **Gather footage before authoring scenes** (see Assets) — what exists constrains the scenes.
-4. **Author the stage** per [references/stage-authoring.md](references/stage-authoring.md), then
+3. **If the source material is a live page** (a benchmark, a launch post, a product surface), read
+   [references/site-fidelity.md](references/site-fidelity.md): screenshot the deployed page, port
+   its real components to `seek(t)`-driven vanilla JS (a shared `stage/kit.css` + `components.js`),
+   and open on its actual cover thumbnail. Reproduce the product's page in motion; don't invent a
+   look next to it.
+4. **Gather footage before authoring scenes** (see Assets) — what exists constrains the scenes.
+5. **Author the stage** per [references/stage-authoring.md](references/stage-authoring.md), then
    run the pipeline below.
 
 ## Phase 3 — pipeline
@@ -119,6 +124,23 @@ mapping *output time → stage time*; `render.mjs` warps every frame through the
 - **Subtitles**: `subs.mjs` force-aligns each segment against its own script (word-level), splits
   into ≤44-char balanced cues, writes an `.srt` **and** burns pills into the stage. Suppress them
   where the words are already on screen.
+
+## Variant — the user records the voiceover
+
+Sometimes the user wants to lay their own voice over the video later (their real voice, not a
+clone). Then the golden rule inverts: **the script decides the timing, not the audio.**
+
+- Still write and get line-level sign-off on the script — it fixes the scene count and the pace.
+- **Build the stage on a fixed nominal timeline** sized to the script's word budget (~2.4 w/s per
+  scene). Don't generate VO and don't warp: render straight through `window.DUR` (no `timing.json`),
+  so the cut is deterministic and matches the paced script.
+- Music is still welcome as a **bed** — generate one track, normalize to about **−16 LUFS** (not
+  ducked, since there's no VO to duck against), so it sits under a voice added later.
+- Deliver, per video: `video.mp4` (with the music bed), `video-silent.mp4` (clean, no audio),
+  `music.mp3` (the stem), and a **`timing.txt` scene-mark sheet** (each beat's in/out timecode)
+  so the user can drop their recording on a track above and line each line up.
+- Keep the read-aloud script's em-dashes as pause marks, but never render them on screen (see
+  [script-writing.md](references/script-writing.md) §5).
 
 ## Assets
 
