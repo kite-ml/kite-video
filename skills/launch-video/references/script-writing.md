@@ -117,6 +117,24 @@ Each of these is a real rewrite from this project:
   automation and retail" beats "teams everywhere".
 - **No page furniture in copy** — no corner labels, dates, or version stamps.
 
+### On-screen copy (especially when reproducing a live page)
+
+The site-faithful look ([site-fidelity.md](site-fidelity.md)) is minimal, so the words on screen
+have to be too. These are hard rules from the robot-eval-bench videos:
+
+- **No all-caps on screen.** Sentence case everywhere — "Keyframes", not "KEYFRAMES" — even where
+  the source page uses small-caps eyebrows. Caps read louder than the minimal look wants.
+- **No em-dashes on screen.** Use a period or a comma. (Em-dashes are fine in the script you read
+  aloud, as pause marks; they just never get *rendered* — keep them out of headlines, captions,
+  labels, and notes.)
+- **Less text, bigger titles.** The reproduced component carries the argument, so a scene gets one
+  short title and the component — not a paragraph. Make that one title big; delete redundant
+  captions and any label that restates what a number already says. When a metric sits in a card
+  that adds nothing, drop the card and let the number stand.
+- **Numbers verbatim from the source.** "63 to 89", "+26", "$1.80", "91%" — copy them exactly from
+  the page or table; never round, restate, or infer. If the story is an average, show the average
+  the table shows, not a re-derivation.
+
 ## 6. Handing the script to the pipeline
 
 The approved script becomes `SEGMENTS` in `audio/eleven.mjs` — one entry per VO segment, in order:
