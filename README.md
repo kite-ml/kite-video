@@ -49,6 +49,12 @@ skills/launch-video/
     audio/*.mjs                 narration, music, beat detection, timing, subtitles, assembly
 ```
 
+## Finished cuts
+
+Every shipped cut is archived under [`videos/`](videos/README.md) as
+`YYYY-MM-DD--<slug>/` — the stage HTML, timing warp and subtitles that re-render it
+deterministically. The mp4 is disposable; the HTML is the master.
+
 ## Requirements
 
 - `ffmpeg` / `ffprobe` on PATH

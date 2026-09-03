@@ -186,3 +186,16 @@ ElevenLabs Avatars has no public API yet, but Flows video does: model `creatify-
 missing, generate in the ElevenLabs UI instead — `avatar.mjs` still builds the hook audio to
 upload, and the stage auto-switches to avatar mode once frames exist
 (see [references/avatar.md](references/avatar.md)).
+
+## Ship — archive the cut
+
+A cut that shipped gets saved in this repo, as code, before anything else happens to it.
+
+When Luigi approves the final render, copy from the project's `video/` into
+`videos/YYYY-MM-DD--<slug>/` here (see [videos/README.md](../../videos/README.md)):
+`stage/index*.html` (the cut's stage, whatever it is named), `stage/timing.js`,
+`stage/subs.js`, plus a `NOTES.md` carrying the source material link, the approved VO script
+verbatim, the length, and the exact render command used. Commit with the video title.
+
+The mp4 is not committed — the stage re-renders it deterministically; the HTML is the master.
+An unarchived cut exists only on one laptop, which is one spilled coffee from not existing.
