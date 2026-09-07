@@ -73,6 +73,11 @@ The brand principles map directly onto how this video is cut — see
 2. **Read [references/decisions.md](references/decisions.md)** — the design decisions already
    settled (motion language, scene grammar, typography, what got rejected and why). Apply them
    by default; don't rediscover them.
+   Then read [inspiration/README.md](../../inspiration/README.md) — the reference films those
+   decisions point at, the house guidance (fast, movement-dense, something every ~2s, never
+   dead-still), and a 12-move inventory each reproduced as pure `seek(t)` code in
+   [inspiration/motions/index.html](../../inspiration/motions/index.html) — copy moves from
+   there instead of inventing them.
 3. **If the source material is a live page** (a benchmark, a launch post, a product surface), read
    [references/site-fidelity.md](references/site-fidelity.md): screenshot the deployed page, port
    its real components to `seek(t)`-driven vanilla JS (a shared `stage/kit.css` + `components.js`),
@@ -92,10 +97,14 @@ node beats.mjs            # detect BPM/phase from the generated music
 node compute-timing.mjs   # VO durations + beats -> out/timing.json, vo-starts.json, stage/timing.js
 ELEVENLABS_API_KEY=… node subs.mjs                                    # forced alignment -> .srt + stage/subs.js
 cd ../render && node render.mjs --stage index2.html --frames frames2  # 1920x1080 @30fps
+node render.mjs --stage index2.html --stills --stills-dir stills2     # per-slide PNG + HTML (required)
 cd ../audio && node assemble.mjs --frames frames2 --out kite-evals-launch.mp4
 ```
 
-- `render.mjs --stills --stills-dir stills2` exports the hero still per scene (from `window.STILLS`).
+- `render.mjs --stills` exports **every slide twice** (from `window.STILLS`): `<name>.png` (2x hero
+  still) and `<name>.html` — a frozen DOM snapshot of the stage at that slide's `t`, scripts
+  stripped, viewable and inspectable on its own. Run it for every cut; both land in
+  `out/<stills-dir>/` and ship with the video (Deliverables, and `slides/` in the archive).
 - `render.mjs --from A --to B` re-renders only a time range — use it for local changes.
 - Full render ≈ 6 min for ~1700 frames. **Always background it** and QA something else meanwhile.
 
@@ -172,7 +181,8 @@ Run these *before* asking for feedback; each maps to a real re-render we paid fo
 ## Deliverables
 
 Deliver **one** video unless asked otherwise. Copy to `~/Desktop/<project>/`:
-`video.mp4`, `video.srt`, `slides/` (hero stills), `audio-stems/`.
+`video.mp4`, `video.srt`, `slides/` (the per-slide `.png` + `.html` pairs from `--stills`),
+`audio-stems/`.
 
 macOS may block direct writes to `~/Desktop` (Files & Folders privacy). Fall back to Finder:
 `osascript -e 'tell application "Finder" to duplicate (POSIX file "…") to (folder "X" of desktop) with replacing'`,
@@ -194,8 +204,10 @@ A cut that shipped gets saved in this repo, as code, before anything else happen
 When Luigi approves the final render, copy from the project's `video/` into
 `videos/YYYY-MM-DD--<slug>/` here (see [videos/README.md](../../videos/README.md)):
 `stage/index*.html` (the cut's stage, whatever it is named), `stage/timing.js`,
-`stage/subs.js`, plus a `NOTES.md` carrying the source material link, the approved VO script
-verbatim, the length, and the exact render command used. Commit with the video title.
+`stage/subs.js`, the slide exports as `slides/` (every `<name>.png` + `<name>.html` pair from
+`out/<stills-dir>/` — re-run `render.mjs --stills` if they are stale), plus a `NOTES.md`
+carrying the source material link, the approved VO script verbatim, the length, and the exact
+render command used. Commit with the video title.
 
 The mp4 is not committed — the stage re-renders it deterministically; the HTML is the master.
 An unarchived cut exists only on one laptop, which is one spilled coffee from not existing.

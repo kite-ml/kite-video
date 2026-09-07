@@ -45,15 +45,23 @@ skills/launch-video/
     avatar.md                   optional lip-synced on-camera bookend
   scripts/                      the working pipeline (copy into a project as video/)
     stage/index.html            animated stage template (the shipped Kite Evals cut)
-    render/render.mjs           headless Chrome → PNG frames
+    render/render.mjs           headless Chrome → PNG frames; --stills → per-slide PNG + frozen HTML
     audio/*.mjs                 narration, music, beat detection, timing, subtitles, assembly
 ```
+
+## Inspiration
+
+[`inspiration/`](inspiration/README.md) holds the four ElevenLabs launch films our motion
+language is stolen from, the house guidance (fast, movement-dense, something happening every
+~2s), and [`inspiration/motions/index.html`](inspiration/motions/index.html) — all 12 signature
+moves reproduced as pure `seek(t)` code, playable in a browser and copy-paste ready for stages.
 
 ## Finished cuts
 
 Every shipped cut is archived under [`videos/`](videos/README.md) as
-`YYYY-MM-DD--<slug>/` — the stage HTML, timing warp and subtitles that re-render it
-deterministically. The mp4 is disposable; the HTML is the master.
+`YYYY-MM-DD--<slug>/` — the stage HTML, timing warp, subtitles that re-render it
+deterministically, and `slides/` with every slide saved twice: a PNG hero still and a frozen
+HTML snapshot. The mp4 is disposable; the HTML is the master.
 
 ## Requirements
 
