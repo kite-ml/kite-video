@@ -30,6 +30,11 @@ function rng(seed){…}                                // seeded PRNG — determ
 Randomness must come from a **seeded** PRNG at build time (cell positions, jitter, tile choices),
 never `Math.random()` inside `seek`.
 
+Don't write moves from scratch: `inspiration/motions/index.html` (repo root) implements the 12
+signature moves from the reference films — typewriter, cascade+count, travel-orb, multiply-grid,
+chip-pops, draw-line, orbit, stream-log, camera-glide, branch-merge, label-swap, morph-logo —
+in exactly this idiom. Copy a section's markup + its `seekMotion` block and retime it.
+
 ## Camera (continuous-canvas stages)
 
 ```js

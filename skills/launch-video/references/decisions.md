@@ -23,8 +23,9 @@ behaves *in motion* — the playbook's four principles decide most of it:
 
 ## Motion language
 
-The reference is the ElevenLabs launch films: **one continuous canvas the camera moves across**,
-not a slideshow of scenes.
+The reference is the ElevenLabs launch films — committed with a motion inventory and runnable
+`seek(t)` reproductions in [`inspiration/`](../../../inspiration/README.md): **one continuous
+canvas the camera moves across**, not a slideshow of scenes.
 
 - **Continuous world.** Lay the whole story out on one horizontal axis in world space
   (hero tile → grid → clusters/report → wire → product UI). The camera dollies laterally,
