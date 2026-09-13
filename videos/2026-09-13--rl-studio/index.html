@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>RL Studio — launch video stage (30s, no VO, blog aesthetic)</title>
+<link rel="stylesheet" href="../../skills/launch-video/scripts/stage/assets/fonts/fonts-local.css">
+<style>
+  /* ---- tokens: cotufa + the current kiteml.com/blog surface ---- */
+  :root{
+    --background:#fdfdfd;              /* sampled from kiteml.com/blog */
+    --foreground:#020202;              /* the blog's headline black */
+    --card:#ffffff;
+    --muted:#f4f4f4;
+    --muted-foreground:#636363;        /* the blog's eyebrow grey */
+    --border:#ededed;
+    --rail:#e2e2e2;
+    --blue-deep:#4163d0;               /* blog banner / cover gradient */
+    --blue-mid:#87adee;
+    --blue-pale:#d3e0f3;
+    --signal-sensor:#4de8c1; --signal-motion:#e84d8a; --signal-gold:#e8d44d;
+    --font-sans:'Google Sans Flex', ui-sans-serif, system-ui, sans-serif;
+    --ink-bg:#0a0a0a; --ink-fg:#fafafa;
+    --RAIL-L:224px; --RAIL-R:1696px;   /* the blog's page rails, scaled to 1920 */
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:#111;overflow:hidden}
+  #stage{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--ink-bg);
+    font-family:var(--font-sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    font-variant-numeric:tabular-nums}
+  .layer{position:absolute;inset:0}
+  .ink{background:
+      radial-gradient(46% 46% at 20% 22%, #1a1a1a 0%, rgba(26,26,26,0) 100%),
+      radial-gradient(46% 46% at 80% 76%, #232323 0%, rgba(35,35,35,0) 100%),
+      #0a0a0a; color:var(--ink-fg)}
+  .w{display:inline-block;will-change:transform,opacity,filter}
+  .vrail{position:absolute;top:0;bottom:0;width:0;border-left:1px dashed var(--rail)}
+  .hrail{position:absolute;left:var(--RAIL-L);width:1472px;height:0;border-top:1px dashed var(--rail)}
+  .eyebrow{font:500 17px/1 var(--font-sans);letter-spacing:.16em;color:var(--muted-foreground)}
+  .display{font:600 60px/1.14 var(--font-sans);letter-spacing:-0.042em;color:var(--foreground);text-wrap:balance}
+
+  /* ================= PAPER — the studio (blog surface) ================= */
+  #paper{background:var(--background);overflow:hidden;z-index:8}
+  #pworld{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:960px 540px;will-change:transform}
+  #peyebrow{position:absolute;left:224px;top:126px}
+  #phead{position:absolute;left:224px;top:166px;width:1472px}
+  #pdiv{position:absolute;top:296px}
+  #pcrumb{position:absolute;left:224px;top:336px;display:flex;align-items:center;gap:13px;
+    font:500 21px/1 var(--font-sans);letter-spacing:-0.03em;color:var(--foreground)}
+  #pcrumb .back{width:28px;height:28px;border-radius:8px;border:1px solid var(--border);display:flex;
+    align-items:center;justify-content:center;color:var(--muted-foreground)}
+  #pcrumb .rid{font:500 16px/1 var(--font-sans);letter-spacing:.03em;color:var(--muted-foreground);margin-left:6px}
+
+  #card{position:absolute;left:224px;top:386px;width:1472px;border-radius:16px;background:var(--card);
+    border:1px solid var(--border);box-shadow:0 18px 40px -26px rgba(0,0,0,.14);padding:26px;
+    will-change:transform,opacity}
+  #ta{position:relative;width:1420px;height:106px;border-radius:12px;border:1px solid var(--border);
+    background:var(--background);padding:21px 22px;font:400 26px/1.35 var(--font-sans);
+    letter-spacing:-0.02em;color:var(--foreground);overflow:hidden}
+  #ta.focus{border-color:#c9c9c9}
+  #taph{position:absolute;left:22px;top:21px;right:22px;color:#adadad}
+  #caret{display:inline-block;width:2.5px;height:0.95em;background:var(--foreground);vertical-align:-0.11em;margin-left:2px;border-radius:1px}
+  #chips{margin-top:16px;display:flex;gap:10px}
+  .sg{border:1px solid var(--border);border-radius:999px;padding:10px 17px;font:400 17px/1 var(--font-sans);
+    letter-spacing:-0.01em;color:var(--muted-foreground);white-space:nowrap;will-change:transform,opacity}
+  #btns{margin-top:18px;display:flex;gap:12px;align-items:center}
+  .btn{display:flex;align-items:center;gap:10px;border-radius:999px;padding:15px 23px;
+    font:500 18px/1 var(--font-sans);letter-spacing:-0.015em;white-space:nowrap;will-change:transform}
+  .btn.primary{background:var(--foreground);color:#fff}
+  .btn.ghost{border:1px solid var(--border);color:var(--foreground)}
+  .btn .ic{width:17px;height:17px;flex:none}
+
+  #plan{position:absolute;left:224px;top:706px;width:1472px;border-radius:16px;background:var(--card);
+    border:1px solid var(--border);box-shadow:0 18px 40px -26px rgba(0,0,0,.14);overflow:hidden;
+    opacity:0;will-change:transform,opacity,height}
+  #plan .toprail{position:absolute;left:0;right:0;top:0;height:3px;
+    background:linear-gradient(90deg,#fdfdfd 0%,var(--blue-pale) 18%,var(--blue-mid) 52%,var(--blue-deep) 74%,#fdfdfd 100%)}
+  #plan .inner{padding:25px 26px 26px}
+  #plan .ttl{font:600 25px/1.2 var(--font-sans);letter-spacing:-0.035em;color:var(--foreground)}
+  #plan .rsn{margin-top:10px;max-width:1200px;font:400 18px/1.5 var(--font-sans);color:var(--muted-foreground)}
+  #plan .rows{margin-top:20px;display:flex;gap:14px}
+  .pf{flex:1;border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--background);
+    will-change:transform,opacity}
+  .pf .k{font:500 13px/1 var(--font-sans);letter-spacing:.15em;color:var(--muted-foreground)}
+  .pf .v{margin-top:10px;font:500 20px/1.2 var(--font-sans);letter-spacing:-0.01em;color:var(--foreground);white-space:nowrap}
+
+  /* ================= TRAIN (dark arena, footage) ================= */
+  #train{visibility:hidden}
+  #tbar{position:absolute;left:60px;top:74px;width:1800px;height:86px;border-radius:14px;
+    background:rgba(255,255,255,.07);
+    -webkit-backdrop-filter:blur(24px) saturate(1.5);backdrop-filter:blur(24px) saturate(1.5);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.10);display:flex;align-items:center;padding:0 26px;gap:14px}
+  #tbar .dot{width:13px;height:13px;border-radius:50%;background:var(--signal-gold);flex:none}
+  #tbar .ttl{font:500 22px/1 var(--font-sans);letter-spacing:-0.035em;color:var(--ink-fg)}
+  #tbar .st{font:400 16px/1 var(--font-sans);letter-spacing:.02em;color:rgba(250,250,250,.5)}
+  #tbar .mets{margin-left:auto;display:flex;gap:44px;align-items:center}
+  .met{text-align:right}
+  .met .k{font:500 12.5px/1 var(--font-sans);letter-spacing:.15em;color:rgba(250,250,250,.45)}
+  .met .v{margin-top:9px;font:600 22px/1 var(--font-sans);letter-spacing:-0.02em;color:var(--ink-fg)}
+  #curve{width:132px;height:38px}
+  #curve path{fill:none;stroke:var(--blue-mid);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+  #tprog{position:absolute;left:60px;top:178px;width:1800px;height:5px;border-radius:3px;background:rgba(250,250,250,.12);overflow:hidden}
+  #tprogf{height:100%;width:0;background:linear-gradient(90deg,var(--blue-deep),var(--blue-mid))}
+  #arena{position:absolute;left:42px;top:224px;width:1836px;height:700px}
+  .tt{position:absolute;border-radius:10px;overflow:hidden;background:#0d0d0d;will-change:transform,opacity}
+  .tt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .tt .tint{position:absolute;inset:0;mix-blend-mode:overlay}
+  .tt .rw{position:absolute;left:9px;bottom:7px;font:500 11.5px/1 var(--font-sans);letter-spacing:.05em;color:rgba(255,255,255,.66)}
+  #thead{position:absolute;left:0;right:0;top:956px;text-align:center;
+    font:600 52px/1.14 var(--font-sans);letter-spacing:-0.042em;color:var(--ink-fg)}
+
+  /* ================= ALIVE (footage hero) ================= */
+  #alive{visibility:hidden;background:#080808;z-index:6}
+  #hero{position:absolute;left:0;top:0;width:1728px;height:972px;border-radius:18px;overflow:hidden;
+    background:#0d0d0d;box-shadow:0 40px 80px -30px rgba(0,0,0,.8),inset 0 0 0 1px rgba(255,255,255,.08);
+    transform-origin:0 0;will-change:transform,opacity}
+  #hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  #heroshade{position:absolute;left:0;right:0;bottom:0;height:46%;
+    background:linear-gradient(to top, rgba(8,8,8,.94) 12%, rgba(8,8,8,.55) 46%, rgba(8,8,8,0))}
+  #herochip{position:absolute;left:34px;top:30px;display:flex;gap:10px;align-items:center;
+    font:500 16px/1 var(--font-sans);letter-spacing:.02em;color:rgba(255,255,255,.88);
+    background:rgba(10,10,10,.5);padding:11px 15px;border-radius:10px}
+  #herochip .g{width:9px;height:9px;border-radius:50%;background:var(--signal-sensor)}
+  #heroact{position:absolute;left:34px;bottom:32px;display:flex;gap:13px;align-items:center;will-change:transform,opacity}
+  #heroact .pill{display:flex;align-items:center;gap:10px;border-radius:999px;padding:14px 21px;
+    font:500 18px/1 var(--font-sans);letter-spacing:-0.015em;background:#fafafa;color:#0a0a0a}
+  #heroact .fileno{font:500 16px/1 var(--font-sans);letter-spacing:.03em;color:rgba(255,255,255,.6)}
+  #ahead{position:absolute;left:0;right:0;top:916px;text-align:center;
+    font:600 52px/1.14 var(--font-sans);letter-spacing:-0.042em;color:var(--ink-fg);z-index:5}
+
+  /* ================= GRID (footage wall) ================= */
+  #grid{visibility:hidden;background:#080808;z-index:5}
+  #gover{visibility:hidden;z-index:7;pointer-events:none}
+  #gwall{position:absolute;inset:0}
+  .gt{position:absolute;overflow:hidden;background:#0d0d0d;will-change:transform,opacity}
+  .gt img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  #ghalo{position:absolute;inset:0;
+    background:rgba(255,255,255,.10);
+    -webkit-backdrop-filter:saturate(1.06);backdrop-filter:saturate(1.06);
+    will-change:opacity}
+  #gglass{position:absolute;left:50%;top:50%;width:828px;height:288px;margin:-144px 0 0 -414px;border-radius:26px;
+    background:rgba(255,255,255,.55);
+    -webkit-backdrop-filter:blur(34px) saturate(1.7);backdrop-filter:blur(34px) saturate(1.7);
+    box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.72),0 40px 90px -28px rgba(0,0,0,.5);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+    will-change:transform,opacity}
+  #gglass .wm{display:flex;align-items:center;gap:18px}
+  #gglass .km{width:58px;height:58px;border-radius:14px;background:#0a0a0a;display:flex;align-items:center;justify-content:center}
+  #gglass .tx{font:600 66px/1 var(--font-sans);letter-spacing:-0.05em;color:#0a0a0a}
+  #gglass .sub{font:400 25px/1.4 var(--font-sans);letter-spacing:-0.02em;color:rgba(2,2,2,.66);text-align:center}
+  #gdim{position:absolute;inset:0;background:var(--background);opacity:0}
+
+  /* ================= CLOSER (blog surface) ================= */
+  #closer{visibility:hidden;background:var(--background);z-index:9}
+  #cbig{position:absolute;left:224px;top:352px;width:1472px}
+  #cbig .l{font:600 68px/1.2 var(--font-sans);letter-spacing:-0.045em;color:var(--foreground)}
+  #endcard{position:absolute;left:224px;top:706px;opacity:0}
+  #endcard .lock{display:inline-flex;align-items:center;gap:18px}
+  #endcard .km{width:58px;height:58px;border-radius:14px;background:var(--foreground);display:flex;align-items:center;justify-content:center}
+  #endcard .wm{font:600 54px/1 var(--font-sans);letter-spacing:-0.05em;color:var(--foreground)}
+  #endcard .url{margin-top:22px;font:500 23px/1 'Google Sans Flex',ui-sans-serif,system-ui,sans-serif;letter-spacing:-0.01em;color:var(--muted-foreground)}
+
+  #dev{position:fixed;left:0;right:0;bottom:0;display:none;gap:12px;align-items:center;padding:10px 16px;
+    background:#1a1a1a;color:#eee;font:500 13px var(--font-sans);z-index:99}
+  #dev input{flex:1}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- ============ PAPER: type + plan ============ -->
+  <section class="layer" id="paper">
+    <div id="pworld">
+      <div class="vrail" style="left:224px"></div>
+      <div class="vrail" style="left:1696px"></div>
+      <div class="eyebrow" id="peyebrow">RL STUDIO</div>
+      <div class="display" id="phead"></div>
+      <div class="hrail" id="pdiv"></div>
+      <div id="pcrumb">
+        <span class="back">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        </span>
+        <span>Open Duck Mini v2 — new training</span>
+        <span class="rid">open_duck_mini_v2</span>
+      </div>
+
+      <div id="card">
+        <div id="ta">
+          <div id="taph">Describe the motion — jump straight up, march with high knees, walk forward slowly…</div>
+          <div id="tatx"><span id="tatxt"></span><span id="caret"></span></div>
+        </div>
+        <div id="chips">
+          <span class="sg">Walk forward smoothly without falling over</span>
+          <span class="sg">Stand perfectly still even when nudged</span>
+          <span class="sg">Turn on the spot to face a new direction</span>
+        </div>
+        <div id="btns">
+          <span class="btn primary" id="b1">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.2 6 3 11l-.9-2.4c-.3-.8.1-1.7 1-2l13.2-4.6c.8-.3 1.7.1 2 1zM6.2 5.3l3.1 3.9M12.4 3.4l3.1 4M3 11h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            Generate the video &amp; imitate
+          </span>
+          <span class="btn ghost">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2"/></svg>
+            Upload a video
+          </span>
+          <span class="btn ghost" id="b3">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></svg>
+            Plan the locomotion (no video)
+          </span>
+        </div>
+      </div>
+
+      <div id="plan">
+        <div class="toprail"></div>
+        <div class="inner">
+          <div class="ttl">Open Duck — walk through the gap (planned, no video)</div>
+          <div class="rsn" id="prsn"></div>
+          <div class="rows">
+            <div class="pf"><div class="k">TASK</div><div class="v">duck_mini_walk</div></div>
+            <div class="pf"><div class="k">COMMANDS</div><div class="v">vx 0.20–0.40 · yaw ±0.20</div></div>
+            <div class="pf"><div class="k">ITEMS</div><div class="v">basketball · crate</div></div>
+            <div class="pf"><div class="k">ENVS</div><div class="v">2,048</div></div>
+            <div class="pf"><div class="k">ITERATIONS</div><div class="v" id="pfit">4,000</div></div>
+          </div>
+        </div>
+      </div>
+      <svg id="cursor" width="28" height="32" viewBox="0 0 26 30" style="position:absolute;left:0;top:0;opacity:0;z-index:40;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))"><path d="M4 2 L4 24 L9.6 18.8 L13 27 L16.8 25.4 L13.5 17.4 L21 17.4 Z" fill="#0a0a0a" stroke="#ffffff" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </div>
+  </section>
+
+  <!-- ============ TRAIN ============ -->
+  <section class="layer ink" id="train">
+    <div id="tbar">
+      <span class="dot" id="tdot"></span>
+      <span class="ttl">Open Duck — walk through the gap</span>
+      <span class="st" id="tst">training on an L4</span>
+      <span class="mets">
+        <span class="met"><span class="k">ITERATION</span><span class="v" id="mIter">0 / 4,000</span></span>
+        <span class="met"><span class="k">REWARD</span><span class="v" id="mRew">0.000</span></span>
+        <span class="met"><span class="k">ENV STEPS</span><span class="v" id="mSteps">0</span></span>
+        <svg id="curve" viewBox="0 0 132 38" preserveAspectRatio="none"><path id="curvep" d=""/></svg>
+      </span>
+    </div>
+    <div id="tprog"><div id="tprogf"></div></div>
+    <div id="arena"></div>
+    <div id="thead">It trains in parallel.</div>
+  </section>
+
+  <!-- ============ GRID (wall) ============ -->
+  <section class="layer" id="grid">
+    <div id="gwall"></div>
+  </section>
+
+  <!-- ============ ALIVE ============ -->
+  <section class="layer" id="alive">
+    <div id="hero">
+      <img id="heroimg" alt="">
+      <div id="heroshade"></div>
+      <div id="herochip"><span class="g"></span> the trained policy</div>
+      <div id="heroact">
+        <span class="pill">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Download the policy
+        </span>
+        <span class="fileno">policy.onnx</span>
+      </div>
+    </div>
+    <div id="ahead">And the policy is yours.</div>
+  </section>
+
+  <!-- ============ GRID overlay ============ -->
+  <section class="layer" id="gover">
+    <div id="ghalo"></div>
+    <div id="gglass">
+      <div class="wm">
+        <span class="km"><svg width="30" height="30" viewBox="0 0 16 16" fill="none"><path d="M8 1L15 8L8 15L1 8L8 1Z" fill="#fafafa"/></svg></span>
+        <span class="tx">RL Studio</span>
+      </div>
+      <div class="sub">Text and video to RL</div>
+    </div>
+    <div id="gdim"></div>
+  </section>
+
+  <!-- ============ CLOSER ============ -->
+  <section class="layer" id="closer">
+    <div class="vrail" style="left:104px"></div>
+    <div class="vrail" style="left:1816px"></div>
+    <div id="cbig">
+      <div class="l" id="cl1"></div>
+      <div class="l" id="cl2"></div>
+      <div class="l" id="cl3"></div>
+    </div>
+    <div id="endcard">
+      <div class="lock">
+        <span class="km"><svg width="30" height="30" viewBox="0 0 16 16" fill="none"><path d="M8 1L15 8L8 15L1 8L8 1Z" fill="#fdfdfd"/></svg></span>
+        <span class="wm">Kite ML</span>
+      </div>
+      <div class="url">kiteml.com/rl-studio</div>
+    </div>
+  </section>
+</div>
+
+<div id="dev"><button id="devplay">▶</button><input type="range" id="devt" min="0" max="30" step="0.0333" value="0"><span id="devtl">0.00</span></div>
+
+<script>
+/* ============================================================
+   RL Studio — 30s, no VO. Opens on the lockup that used to close it.
+   Authored scenes follow kiteml.com/blog: near-white ground, dashed
+   page rails, near-black tight display type, Google Sans Flex only.
+   Every visual is a pure function of t.
+   ============================================================ */
+const DUR = 30;
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp=(a,b,x)=>a+(b-a)*x;
+const P=(t,a,b)=>clamp((t-a)/(b-a),0,1);
+const cubicOut=x=>1-Math.pow(1-x,3);
+const cubicInOut=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const backOut=x=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)};
+function rng(seed){return function(){let z=seed+=0x6D2B79F5;z=Math.imul(z^z>>>15,z|1);z^=z+Math.imul(z^z>>>7,z|61);return((z^z>>>14)>>>0)/4294967296}}
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+const pad=(n,w=2)=>String(n).padStart(w,'0');
+const $=id=>document.getElementById(id);
+
+const W={
+  open:[0,2.6], type:[2.6,7.6], plan:[7.6,11.0], train:[11.0,16.4],
+  alive:[16.4,20.6], grid:[20.6,26.2], close:[26.2,30]
+};
+/* the film opens on the wall of published policies — the frame the later grid
+   beat lands on — then washes to paper and the studio builds on it. */
+const OPEN_END=2.6;
+const vis=(el,on)=>{el.style.visibility=on?'visible':'hidden'};
+
+const FEATURED='aa71850598f5';
+const CLIPS=["aa71850598f5", "86349ca644bd", "5e5ea81a8f95", "5b6acafeda08", "87f0d702eee8", "917ed00462a6", "04ecfe66e036", "5a19558367a6", "126669cd1963", "21525462e7af", "863d69d5bfa4", "cdf8f6618618", "ebc3c622b945", "c59431d44dc1", "c4e14813eab2", "27bd0499071d", "7f4eee0f976f", "4d574ce4c547", "88d2abaf2728", "e784b53ded66", "17f4bf8016ce", "a9147df5354b"];
+const GRID_N=66, HERO_N=75;
+const gsrc=(id,i)=>`assets/frames/grid/${id}_${pad(((i%GRID_N)+GRID_N)%GRID_N+1)}.jpg`;
+const hsrc=i=>`assets/frames/hero/h_${pad(((i%HERO_N)+HERO_N)%HERO_N+1,3)}.jpg`;
+
+function typify(el,text){
+  el.textContent='';const spans=[];
+  for(const ch of text){
+    if(ch===' '){el.appendChild(document.createTextNode(' '));continue}
+    const s=document.createElement('span');s.style.opacity='0';s.textContent=ch;el.appendChild(s);spans.push(s);
+  }
+  return spans;
+}
+function typeTo(spans,n){for(let i=0;i<spans.length;i++)spans[i].style.opacity=i<n?'1':'0'}
+function words(el,text){
+  el.textContent='';const out=[];
+  text.split(' ').forEach((wd,i,arr)=>{
+    const s=document.createElement('span');s.className='w';s.textContent=wd;el.appendChild(s);out.push(s);
+    if(i<arr.length-1)el.appendChild(document.createTextNode(' '));
+  });
+  return out;
+}
+function wordsIn(ws,t,t0,step=0.06,dur=0.5){
+  ws.forEach((s,i)=>{
+    const p=cubicOut(P(t,t0+i*step,t0+i*step+dur));
+    s.style.opacity=p;
+    s.style.transform=`translateY(${(1-p)*26}px)`;
+    s.style.filter=`blur(${(1-p)*7}px)`;
+  });
+}
+
+const PHEAD=words($('phead'),'Describe the motion.');
+const PROMPT='walk forward between a basketball and a crate';
+const TA=typify($('tatxt'),PROMPT);
+const RSN=typify($('prsn'),
+  'A short forward walk with the gap between the two items as the corridor. Velocity band kept low so the duck clears both without clipping; 4,000 iterations is what the duck needs to track it.');
+const CHIPS=[...document.querySelectorAll('#chips .sg')];
+
+const TCOLS=6,TROWS=4,TW=296,TH_=166,TGAP=12;
+const tiles=[];
+{
+  const r=rng(7), wall=$('arena');
+  for(let i=0;i<TCOLS*TROWS;i++){
+    const c=i%TCOLS,row=(i/TCOLS)|0;
+    const d=document.createElement('div');d.className='tt';
+    d.style.left=(c*(TW+TGAP))+'px';d.style.top=(row*(TH_+TGAP))+'px';
+    d.style.width=TW+'px';d.style.height=TH_+'px';
+    const im=document.createElement('img');d.appendChild(im);
+    const tn=document.createElement('div');tn.className='tint';d.appendChild(tn);
+    const rw=document.createElement('div');rw.className='rw';d.appendChild(rw);
+    wall.appendChild(d);
+    tiles.push({el:d,img:im,tint:tn,rw,off:(r()*GRID_N)|0,order:r(),pop:r()});
+  }
+  const ord=tiles.map((x,i)=>i).sort((a,b)=>tiles[a].order-tiles[b].order);
+  ord.forEach((idx,k)=>{tiles[idx].greenAt=0.18+0.62*(k/ord.length)});
+}
+const HERO_TILE=9;
+
+const GCOLS=8,GROWS=5,GW=240,GH=216;
+const gts=[];
+{
+  const r=rng(23), wall=$('gwall');
+  for(let i=0;i<GCOLS*GROWS;i++){
+    const c=i%GCOLS,row=(i/GCOLS)|0;
+    const d=document.createElement('div');d.className='gt';
+    d.style.left=(c*GW)+'px';d.style.top=(row*GH)+'px';
+    d.style.width=GW+'px';d.style.height=GH+'px';
+    const im=document.createElement('img');d.appendChild(im);
+    wall.appendChild(d);
+    gts.push({el:d,img:im,id:CLIPS[i%CLIPS.length],off:(r()*GRID_N)|0,pop:r()});
+  }
+  gts[12].id=FEATURED;
+}
+const GRID_HERO=12;
+
+const CL1=words($('cl1'),'Pick a robot.');
+const CL2=words($('cl2'),'Describe a behavior.');
+const CL3=words($('cl3'),'Take the policy.');
+const THEAD=words($('thead'),'It trains in parallel.');
+const AHEAD=words($('ahead'),'And the policy is yours.');
+
+const preload=[];
+function pre(src){const im=new Image();im.src=src;preload.push(im.decode().catch(()=>{}));}
+for(let i=0;i<HERO_N;i++)pre(hsrc(i));
+for(const id of CLIPS)for(let i=0;i<GRID_N;i++)pre(gsrc(id,i));
+window.READY=Promise.all([document.fonts.ready,...preload]);
+
+function seek(t){
+  t=clamp(t,0,DUR);
+
+  /* ---------------- PAPER: type + plan ---------------- */
+  {
+    const on=t>OPEN_END-0.35 && t<W.train[0]+0.3;
+    vis($('paper'),on);
+    if(on){
+      const ex=P(t,W.train[0]-0.18,W.train[0]+0.12);
+      $('paper').style.opacity=P(t,OPEN_END-0.25,OPEN_END+0.12)*(1-ex);
+
+      const lean=cubicInOut(P(t,W.plan[0]-0.3,W.plan[0]+0.9));
+      const zoom=lerp(1.06,0.955,lean)*(1+0.06*ex);
+      const ty=lerp(40,-170,lean);
+      const dx=4*Math.sin(0.61*t)+2*Math.sin(1.3*t+2), dy=3*Math.sin(0.83*t+1);
+      $('pworld').style.transform=`translate(${dx}px,${ty+dy}px) scale(${zoom})`;
+
+      const b=W.type[0];
+      $('peyebrow').style.opacity=P(t,b+0.18,b+0.52);
+      $('peyebrow').style.transform=`translateY(${(1-cubicOut(P(t,b+0.18,b+0.62)))*12}px)`;
+      wordsIn(PHEAD,t,b+0.30,0.065,0.5);
+      $('pdiv').style.opacity=P(t,b+0.55,b+0.9);
+      $('pdiv').style.width=(1472*cubicOut(P(t,b+0.55,b+1.15)))+'px';
+      const cp=backOut(P(t,b+0.12,b+0.78));
+      $('pcrumb').style.opacity=P(t,b+0.2,b+0.58);
+      $('card').style.opacity=P(t,b+0.24,b+0.6);
+      $('card').style.transform=`translateY(${(1-cp)*54}px)`;
+
+      const tp=P(t,b+0.95,b+3.55);
+      typeTo(TA,Math.round(tp*TA.length));
+      $('taph').style.opacity=tp>0?0:clamp(1-P(t,b+0.7,b+0.95),0,1);
+      $('ta').className=t>b+0.7?'focus':'';
+      const blink=(t*2.2)%1<0.55?1:0.15;
+      $('caret').style.opacity=(t>b+0.66&&t<W.plan[0]+0.1)?(tp<1?1:blink):0;
+
+      CHIPS.forEach((c,i)=>{
+        const p=backOut(P(t,b+0.62+i*0.09,b+1.22+i*0.09));
+        c.style.opacity=P(t,b+0.62+i*0.09,b+0.95+i*0.09);
+        c.style.transform=`translateY(${(1-p)*14}px) scale(${0.94+0.06*p})`;
+      });
+
+      const cur=$('cursor');
+      const ct=cubicInOut(P(t,b+3.7,b+4.55));
+      cur.style.opacity=P(t,b+3.55,b+3.8)*(1-P(t,W.plan[0]+0.5,W.plan[0]+0.8));
+      cur.style.transform=`translate(${lerp(1220,1372,ct)}px,${lerp(830,706,ct)}px)`;
+      const click=P(t,b+4.62,b+4.78), rel=P(t,b+4.78,b+5.0);
+      $('b3').style.transform=`scale(${1-0.03*(click-rel)})`;
+
+      const pb=W.plan[0];
+      const pp=cubicOut(P(t,pb+0.02,pb+0.62));
+      $('plan').style.opacity=P(t,pb+0.02,pb+0.34);
+      $('plan').style.height=(pp*300)+'px';
+      $('plan').style.transform=`translateY(${(1-pp)*18}px)`;
+      typeTo(RSN,Math.round(P(t,pb+0.42,pb+2.0)*RSN.length));
+      {
+        const fs=[...document.querySelectorAll('#plan .pf')];
+        const sweep=P(t,pb+1.5,pb+3.0)*fs.length;
+        fs.forEach((f,i)=>{
+          const p=backOut(P(t,pb+0.5+i*0.07,pb+1.02+i*0.07));
+          const hot=clamp(1-Math.abs(sweep-(i+0.5))*1.6,0,1);
+          f.style.opacity=P(t,pb+0.5+i*0.07,pb+0.82+i*0.07);
+          f.style.transform=`translateY(${(1-p)*16}px)`;
+          f.style.borderColor=hot>0.02?`rgba(2,2,2,${(0.07+0.30*hot).toFixed(3)})`:'#ededed';
+          f.style.boxShadow=hot>0.02?`0 0 0 ${(3*hot).toFixed(1)}px rgba(2,2,2,${(0.05*hot).toFixed(3)})`:'none';
+        });
+      }
+    }
+  }
+
+  /* ---------------- TRAIN ---------------- */
+  {
+    const on=t>W.train[0]-0.25 && t<W.alive[0]+0.5;
+    vis($('train'),on);
+    if(on){
+      const tl=Math.max(0,t-W.train[0]);
+      const p=clamp(tl/(W.train[1]-W.train[0]),0,1);
+      $('train').style.opacity=P(t,W.train[0]-0.18,W.train[0]+0.12)*(1-P(t,W.alive[0]-0.05,W.alive[0]+0.34));
+      const learn=1-Math.exp(-3.1*p);
+      const iter=Math.round(learn*4000/50)*50;
+      $('mIter').textContent=fmt(iter)+' / 4,000';
+      $('mRew').textContent=(0.06+learn*1.12).toFixed(3);
+      $('mSteps').textContent=fmt(iter*2048*24);
+      $('tprogf').style.width=(learn*100).toFixed(1)+'%';
+      $('tdot').style.background=p<0.94?'var(--signal-gold)':'var(--signal-sensor)';
+      $('tst').textContent=p<0.06?'starting the machine':(p<0.94?'training on an L4':'done');
+      {
+        let d='';const N=34, upto=Math.max(2,Math.round(N*p));
+        for(let i=0;i<upto;i++){
+          const x=i/(N-1);
+          d+=(i?'L':'M')+(x*132).toFixed(1)+','+(36-(1-Math.exp(-3.4*x))*32).toFixed(1);
+        }
+        $('curvep').setAttribute('d',d);
+      }
+      tiles.forEach((tt,i)=>{
+        const pop=backOut(P(t,W.train[0]+0.12+tt.pop*0.5,W.train[0]+0.72+tt.pop*0.5));
+        tt.el.style.opacity=P(t,W.train[0]+0.12+tt.pop*0.5,W.train[0]+0.5+tt.pop*0.5);
+        tt.img.src=gsrc(FEATURED,Math.floor((tl*12)+tt.off));
+        const g=clamp((p-tt.greenAt)/0.16,0,1);
+        const cr=[Math.round(232-155*g),Math.round(77+155*g),Math.round(138+55*g)];
+        tt.tint.style.background=`rgba(${cr[0]},${cr[1]},${cr[2]},${(0.20-0.10*g).toFixed(3)})`;
+        tt.el.style.boxShadow=`inset 0 0 0 1.5px rgba(${cr[0]},${cr[1]},${cr[2]},${(0.5+0.28*g).toFixed(2)})`;
+        tt.rw.textContent=(0.04+g*1.1+((i%7)-3)*0.012).toFixed(2);
+        const s=(i===HERO_TILE)?1+0.02*Math.sin(2.4*t):1;
+        tt.el.style.transform=`translateY(${(1-pop)*22}px) scale(${(0.9+0.1*pop)*s})`;
+      });
+      wordsIn(THEAD,t,W.train[0]+0.55,0.06,0.5);
+      $('thead').style.opacity=1-P(t,W.alive[0]-0.45,W.alive[0]-0.05);
+    }
+  }
+
+  /* ---------------- ALIVE ---------------- */
+  {
+    const on=t>W.alive[0]-0.35 && t<W.grid[0]+1.3;
+    vis($('alive'),on);
+    if(on){
+      const tl=Math.max(0,t-W.alive[0]);
+      $('heroimg').src=hsrc(Math.floor(tl*15));
+      const grow=cubicOut(P(t,W.alive[0]-0.1,W.alive[0]+0.85));
+      const c=HERO_TILE%TCOLS, r=(HERO_TILE/TCOLS)|0;
+      let x=lerp(42+c*(TW+TGAP),96,grow), y=lerp(224+r*(TH_+TGAP),54,grow);
+      let sx=lerp(TW/1728,1,grow), sy=lerp(TH_/972,1,grow);
+      const shrink=cubicInOut(P(t,W.grid[0]-0.15,W.grid[0]+0.85));
+      if(shrink>0){
+        const gc=GRID_HERO%GCOLS, gr=(GRID_HERO/GCOLS)|0;
+        x=lerp(x,gc*GW,shrink); y=lerp(y,gr*GH,shrink);
+        sx=lerp(sx,GW/1728,shrink); sy=lerp(sy,GH/972,shrink);
+      }
+      const br=1+0.006*Math.sin(1.1*t);
+      $('hero').style.transform=`translate(${x}px,${y}px) scale(${sx*br},${sy*br})`;
+      $('hero').style.borderRadius=lerp(10,18,grow*(1-shrink))+'px';
+      $('alive').style.opacity=P(t,W.alive[0]-0.3,W.alive[0]+0.02);
+      $('alive').style.background=shrink>0.5?'transparent':'#080808';
+      const chromeA=P(t,W.alive[0]+0.55,W.alive[0]+0.95)*(1-P(t,W.grid[0]-0.5,W.grid[0]-0.1));
+      $('herochip').style.opacity=chromeA;
+      $('heroshade').style.opacity=chromeA;
+      const ap=backOut(P(t,W.alive[0]+0.95,W.alive[0]+1.55));
+      $('heroact').style.opacity=P(t,W.alive[0]+0.95,W.alive[0]+1.3)*(1-P(t,W.grid[0]-0.5,W.grid[0]-0.1));
+      $('heroact').style.transform=`translateY(${(1-ap)*20}px)`;
+      wordsIn(AHEAD,t,W.alive[0]+0.5,0.065,0.5);
+      $('ahead').style.opacity=1-P(t,W.grid[0]-0.6,W.grid[0]-0.2);
+    }
+  }
+
+  /* ---------------- WALL (opener) + GRID (later beat) ---------------- */
+  {
+    const opening = t < OPEN_END+0.2;
+    const on = opening || (t>W.grid[0]-0.6 && t<W.close[0]+0.4);
+    vis($('grid'),on); vis($('gover'),on);
+    if(on){
+      const tl = opening ? t : Math.max(0,t-W.grid[0]);
+      gts.forEach((g,i)=>{
+        if(opening){
+          // frame 0 is the finished wall — everything already on screen
+          g.el.style.opacity=1; g.el.style.transform='scale(1)';
+        } else if(i===GRID_HERO){
+          g.el.style.opacity=P(t,W.grid[0]+0.75,W.grid[0]+0.95);
+        } else {
+          const st=W.grid[0]-0.15+g.pop*0.95;
+          const p=cubicOut(P(t,st,st+0.5));
+          g.el.style.opacity=p;
+          g.el.style.transform=`scale(${0.82+0.18*p})`;
+        }
+        g.img.src=gsrc(g.id,Math.floor(tl*12)+g.off);
+      });
+      $('gwall').style.transformOrigin='960px 540px';
+      $('gwall').style.transform=`scale(${opening
+        ? 1.0+0.030*cubicInOut(P(t,0,OPEN_END))
+        : 1.0+0.035*cubicInOut(P(t,W.grid[0],W.close[0]))})`;
+      if(opening){
+        $('gglass').style.opacity=1;
+        $('gglass').style.transform='scale(1)';
+        $('ghalo').style.opacity=1;
+
+        // wash the wall out to the blog's paper; the studio builds on top of it
+        $('gdim').style.opacity=P(t,OPEN_END-0.6,OPEN_END-0.02);
+        const gout=1-P(t,OPEN_END-0.12,OPEN_END+0.14);
+        $('grid').style.opacity=gout; $('gover').style.opacity=gout;
+      } else {
+        const gp=backOut(P(t,W.grid[0]+1.15,W.grid[0]+1.85));
+        $('gglass').style.opacity=P(t,W.grid[0]+1.15,W.grid[0]+1.55);
+        $('gglass').style.transform=`translateY(${(1-gp)*26}px) scale(${0.965+0.035*gp})`;
+        $('ghalo').style.opacity=P(t,W.grid[0]+1.0,W.grid[0]+1.42);
+        $('gdim').style.opacity=P(t,W.close[0]-0.55,W.close[0]-0.02);
+        const gout=1-P(t,W.close[0]-0.05,W.close[0]+0.18);
+        $('grid').style.opacity=gout; $('gover').style.opacity=gout;
+      }
+    }
+  }
+
+  /* ---------------- CLOSER ---------------- */
+  {
+    const on=t>W.close[0]-0.45;
+    vis($('closer'),on);
+    if(on){
+      $('closer').style.opacity=P(t,W.close[0]-0.4,W.close[0]-0.02);
+      const b=W.close[0];
+      wordsIn(CL1,t,b+0.10,0.055,0.45);
+      wordsIn(CL2,t,b+0.42,0.055,0.45);
+      wordsIn(CL3,t,b+0.78,0.055,0.45);
+      const ec=cubicOut(P(t,b+1.8,b+2.35));
+      $('endcard').style.opacity=ec;
+      $('endcard').style.transform=`translateY(${(1-ec)*18}px)`;
+    }
+  }
+}
+
+window.seek=seek; window.DUR=DUR;
+window.STILLS=[
+  {name:'s0-wall',    t:0.30},
+  {name:'s1-type',    t:6.40},
+  {name:'s2-plan',    t:10.10},
+  {name:'s3-train',   t:14.80},
+  {name:'s4-alive',   t:18.60},
+  {name:'s5-grid',    t:24.40},
+  {name:'s6-closer',  t:29.30},
+];
+
+if(location.search.includes('dev')){
+  $('dev').style.display='flex';
+  const rangeEl=$('devt'), lab=$('devtl');
+  const setT=v=>{seek(+v);lab.textContent=(+v).toFixed(2)};
+  rangeEl.addEventListener('input',e=>setT(e.target.value));
+  let playing=false,raf=0,t0=0,base=0;
+  $('devplay').addEventListener('click',()=>{
+    playing=!playing;$('devplay').textContent=playing?'❚❚':'▶';
+    if(playing){t0=performance.now();base=+rangeEl.value;
+      const step=()=>{if(!playing)return;const v=base+(performance.now()-t0)/1000;
+        if(v>=DUR){rangeEl.value=DUR;setT(DUR);playing=false;$('devplay').textContent='▶';return}
+        rangeEl.value=v;setT(v);raf=requestAnimationFrame(step)};raf=requestAnimationFrame(step);}
+    else cancelAnimationFrame(raf);
+  });
+  window.READY.then(()=>setT(0));
+} else { window.READY.then(()=>seek(0)); }
+</script>
+</body>
+</html>

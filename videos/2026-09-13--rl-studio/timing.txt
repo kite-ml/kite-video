@@ -1,0 +1,30 @@
+RL Studio — 30s cut · scene marks (30fps, fixed nominal timeline, no VO)
+Drop a recording or a music bed on a track above the video and line it up to these in-points.
+
+IN       OUT      FRAMES      BEAT              ON-SCREEN COPY
+0:00.00  0:02.60  0000–0077   Wall (opener)     RL Studio · Text and video to RL
+0:02.60  0:07.60  0078–0227   Type (paper)      Describe the motion.
+                                                (typed) walk forward between a basketball and a crate
+0:07.60  0:11.00  0228–0329   Plan (paper)      Open Duck — walk through the gap (planned, no video)
+0:11.00  0:16.40  0330–0491   Train (dark)      It trains in parallel.
+0:16.40  0:20.60  0492–0617   Alive (hero)      And the policy is yours.
+0:20.60  0:26.20  0618–0785   Grid              RL Studio · Text and video to RL
+0:26.20  0:30.00  0786–0899   Closer (paper)    Pick a robot. Describe a behavior. Take the policy.
+                                                kiteml.com/rl-studio
+
+Beat marks inside the scenes:
+0:02.00   the wall washes out to paper
+0:03.55   typing starts in the prompt box
+0:06.15   typing completes
+0:06.30   cursor travels to "Plan the locomotion (no video)"
+0:07.22   click
+0:07.62   plan panel unfolds
+0:09.10   focus ring sweeps the plan fields
+0:11.12   fleet tiles pop in
+0:16.35   last worlds turn green
+0:16.70   one world grows into the hero
+0:17.75   "Download the policy" pill lands
+0:20.45   hero shrinks into its grid slot, the wall multiplies out
+0:21.75   glass RL Studio lockup lands
+0:25.65   wall washes to paper
+0:28.00   end card lockup
