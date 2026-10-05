@@ -1,0 +1,8 @@
+{
+ "source": "/Users/luigi/Downloads/kite-relight-videos/episode-0/original_top.mp4",
+ "t0": 2.0,
+ "frames": 150,
+ "fps": 30,
+ "instruction": "Add two distractor objects on the wooden table in front of the cardboard box: a red coffee mug on the left and a roll of silver duct tape on the right. Do not change anything else: the cardboard box must keep its exact printed artwork and text, and the robot arms and their motion, the background, the camera view and the lighting must stay identical.",
+ "seconds": 62.1
+}

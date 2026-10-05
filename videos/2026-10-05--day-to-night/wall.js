@@ -1,0 +1,1 @@
+window.WALLN={"w_ds_tungsten_top": 57, "w_api_top": 58, "w_gen_top": 58, "w_distract": 58, "w_bg_high": 30, "w_spot_high": 30, "w_surf_left": 58, "w_ds_daylight_top": 57, "w_api_left": 58, "w_gen_left": 58, "w_bg_left": 30, "w_spot_right": 30, "w_surf_right": 58, "w_ds_tungsten_left": 57, "w_ds_daylight_left": 57};

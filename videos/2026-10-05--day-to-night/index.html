@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Day to night — data augmentation video stage</title>
+<link rel="stylesheet" href="../../skills/launch-video/scripts/stage/assets/fonts/fonts-local.css">
+<style>
+  /* ---- cotufa tokens (copied from graphics/dist/theme.css) + the blog's sampled values ---- */
+  :root{
+    --background: oklch(0.995 0 0);
+    --foreground: oklch(0.08 0 0);
+    --muted-foreground: oklch(0.5 0 0);
+    --popover: oklch(1 0 0);
+    --signal-gradient: linear-gradient(100deg, #e8d44d 0%, #4de8c1 25%, #3b82f6 50%, #8b5cf6 75%, #e84d8a 100%);
+    --font-sans:'Google Sans Flex', ui-sans-serif, system-ui, sans-serif;
+    --font-mono:'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+    --ink-bg:#0a0a0a; --ink-fg: oklch(0.98 0 0);
+    --blog-ground:#fdfdfd; --blog-head:#020202; --blog-eyebrow:#636363; --blog-hair:#ededed;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:#111;overflow:hidden}
+  #stage{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--ink-bg);
+    font-family:var(--font-sans);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  .layer{position:absolute;inset:0}
+  .fade{opacity:0;will-change:transform,opacity}
+  .signal-text{background-image:var(--signal-gradient);-webkit-background-clip:text;background-clip:text;color:transparent}
+  canvas.ft{display:block;background-size:cover;background-position:center}
+
+  /* ================= INK ================= */
+  .grain{position:absolute;inset:0;opacity:.34;mix-blend-mode:overlay;pointer-events:none}
+  .kmark{width:44px;height:44px;border-radius:9px;background:var(--ink-fg);display:flex;align-items:center;justify-content:center}
+  #hook .kmark{position:absolute;left:120px;top:96px}
+  #hookwrap{position:absolute;left:120px;top:50%;transform:translateY(-50%);width:800px}
+  #hookwrap .line{font:500 58px/1.16 var(--font-sans);letter-spacing:-0.045em;color:var(--ink-fg);margin:22px 0;text-wrap:balance}
+  .camlab{position:absolute;font:500 18px/1 var(--font-mono);letter-spacing:.04em;color:rgba(250,250,250,.56)}
+  .inktile{position:absolute;border-radius:16px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1),0 30px 60px -30px rgba(0,0,0,.8)}
+  #hookread{position:absolute;left:1000px;top:836px;font:500 22px/1 var(--font-mono);letter-spacing:.02em;color:rgba(250,250,250,.6)}
+  #hookread b{color:var(--ink-fg);font-weight:600}
+
+  #gen .head{position:absolute;left:0;right:0;top:104px;text-align:center;font:600 66px/1.1 var(--font-sans);letter-spacing:-0.045em;color:var(--ink-fg)}
+  #gen .glab{position:absolute;width:520px;text-align:center;font:500 30px/1 var(--font-sans);letter-spacing:-0.02em;color:var(--ink-fg)}
+
+  #wall{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:50% 50%}
+  #wall canvas{position:absolute;border-radius:12px}
+  #askscrim{position:absolute;inset:0;background:radial-gradient(56% 48% at 50% 50%, rgba(10,10,10,.86), rgba(10,10,10,.45) 70%, rgba(10,10,10,.3))}
+  #askhead{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center}
+  #askhead .h1{font:600 72px/1.08 var(--font-sans);letter-spacing:-0.05em;color:var(--ink-fg)}
+  #endcard{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  #endcard .lock{display:flex;align-items:center;gap:20px}
+  #endcard .kmark{width:72px;height:72px;border-radius:15px}
+  #endcard .wm{font:600 66px/1 var(--font-sans);letter-spacing:-0.05em;color:var(--ink-fg)}
+  #endcard .sub{margin-top:28px;font:500 34px/1 var(--font-sans);letter-spacing:-0.02em;color:rgba(250,250,250,.74)}
+  #endcard .sub b{color:var(--ink-fg);font-weight:600}
+
+  /* ================= PAPER (the blog's look) ================= */
+  #paper{background:var(--blog-ground);overflow:hidden;visibility:hidden}
+  .rail{position:absolute;top:0;bottom:0;width:0;border-left:1px dashed var(--blog-hair)}
+  .ptitle{position:absolute;left:0;right:0;text-align:center;font:600 66px/1.1 var(--font-sans);letter-spacing:-0.045em;color:var(--blog-head)}
+  .scene{position:absolute;inset:0;visibility:hidden}
+  .card{position:absolute;background:#fff;border:1px solid var(--blog-hair);border-radius:16px;overflow:hidden;
+    box-shadow:0 26px 44px -26px rgba(0,0,0,.16),0 2px 8px rgba(0,0,0,.03)}
+  .card .rh{height:46px;display:flex;align-items:center;gap:10px;padding:0 22px;border-bottom:1px solid var(--blog-hair);
+    font:500 14px/1 var(--font-mono);letter-spacing:.06em;color:#6b6b6b}
+  .card .rh i{width:9px;height:9px;border-radius:50%;border:1.5px solid #9a9a9a}
+  #setline{position:absolute;left:300px;top:850px;font:500 22px/1 var(--font-mono);color:#6b6b6b;white-space:pre}
+  #setline .c{opacity:0}
+  #setline b{color:#141414;font-weight:600}
+  .pill{position:absolute;padding:8px 14px 9px;border-radius:999px;font:500 18px/1 var(--font-sans);letter-spacing:-0.01em;
+    color:#fff;background:rgba(10,10,10,.55);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+  #strip .lab{position:absolute;left:22px;top:12px;font:500 13px/1 var(--font-mono);letter-spacing:.06em;color:#8a8a8a}
+  #strip svg{position:absolute;left:0;top:0}
+
+  /* ================= SUBTITLES ================= */
+  #subs{position:absolute;left:0;right:0;bottom:44px;display:flex;justify-content:center;pointer-events:none;z-index:60}
+  #subs .pill2{max-width:1240px;padding:13px 26px 14px;border-radius:999px;font:500 29px/1.25 var(--font-sans);letter-spacing:-0.025em;
+    text-align:center;white-space:nowrap;opacity:0;
+    -webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4)}
+  #subs .pill2.paper{background:color-mix(in oklab, var(--popover) 82%, transparent);color:var(--foreground);
+    box-shadow:inset 0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent),0 14px 30px -12px rgba(0,0,0,.14)}
+  #subs .pill2.ink{background:rgba(10,10,10,.62);color:var(--ink-fg);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+
+  #dev{position:fixed;left:12px;bottom:12px;z-index:99;background:#000c;color:#fff;padding:10px 14px;border-radius:10px;font:500 13px/1 var(--font-mono);display:none;align-items:center;gap:12px}
+  #dev input{width:520px}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- ============ INK ============ -->
+  <section class="layer" id="ink">
+    <div class="layer" id="hook">
+      <div class="kmark"><svg width="20" height="20" viewBox="0 0 16 16" fill="none"><path d="M8 1L15 8L8 15L1 8L8 1Z" fill="#0a0a0a"/></svg></div>
+      <div id="hookwrap">
+        <div class="line fade" id="tl1">We recorded our robot’s demos on a bright morning.</div>
+        <div class="line fade" id="tl2">By evening, its cameras saw a different scene.</div>
+      </div>
+      <div class="camlab" style="left:1000px;top:172px">observation.images.top</div>
+      <div class="inktile" style="left:1000px;top:206px;width:800px;height:600px"><canvas class="ft" id="hookcv" width="800" height="600"></canvas></div>
+      <div id="hookread">brightness <b id="hb">166</b> · warmth <b id="hw">1.03</b></div>
+    </div>
+
+    <div class="layer" id="gen" style="visibility:hidden">
+      <div class="head fade" id="genT">Generate new scenes.</div>
+      <div class="glab fade" id="gl0" style="left:150px;top:254px">Distractor objects</div>
+      <div class="glab fade" id="gl1" style="left:700px;top:254px">New backgrounds</div>
+      <div class="glab fade" id="gl2" style="left:1250px;top:254px">New surfaces</div>
+      <div class="inktile fade" id="gt0" style="left:150px;top:304px;width:520px;height:390px"><canvas class="ft" id="gcv0" width="520" height="390"></canvas></div>
+      <div class="inktile fade" id="gt1" style="left:700px;top:304px;width:520px;height:390px"><canvas class="ft" id="gcv1" width="520" height="390"></canvas></div>
+      <div class="inktile fade" id="gt2" style="left:1250px;top:304px;width:520px;height:390px"><canvas class="ft" id="gcv2" width="520" height="390"></canvas></div>
+    </div>
+
+    <div class="layer" id="ask" style="visibility:hidden">
+      <div id="wall"></div>
+      <div id="askscrim"></div>
+      <div id="askhead"><div class="h1 fade" id="ah1">Augment your dataset with the Kite API<span class="signal-text">.</span></div></div>
+      <div id="endcard" class="fade">
+        <div class="lock">
+          <div class="kmark"><svg width="32" height="32" viewBox="0 0 16 16" fill="none"><path d="M8 1L15 8L8 15L1 8L8 1Z" fill="#0a0a0a"/></svg></div>
+          <div class="wm">Kite ML</div>
+        </div>
+        <div class="sub"><b>Data augmentation</b> · docs.kiteml.com</div>
+      </div>
+    </div>
+
+    <div class="grain"><svg width="100%" height="100%" aria-hidden>
+      <filter id="gf"><feTurbulence id="gtb" type="fractalNoise" baseFrequency="0.62" numOctaves="3" stitchTiles="stitch" seed="1"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer><feFuncR type="linear" slope="1.9" intercept="-0.45"/><feFuncG type="linear" slope="1.9" intercept="-0.45"/><feFuncB type="linear" slope="1.9" intercept="-0.45"/></feComponentTransfer></filter>
+      <rect width="100%" height="100%" filter="url(#gf)"/></svg>
+    </div>
+  </section>
+
+  <!-- ============ PAPER ============ -->
+  <section class="layer" id="paper">
+    <div class="rail" style="left:225px"></div><div class="rail" style="left:1695px"></div>
+
+    <div class="scene" id="rel">
+      <div class="ptitle fade" id="relT" style="top:104px">Relight to match a photo.</div>
+      <div class="card" id="relcard" style="left:300px;top:236px;width:722px">
+        <div class="rh"><i></i>observation.images.top</div>
+        <canvas class="ft" id="relcv" width="720" height="540"></canvas>
+      </div>
+      <div class="card fade" id="refcard" style="left:1080px;top:303px;width:542px">
+        <div class="rh"><i></i>reference photo</div>
+        <img src="assets/live_top_540.jpg" width="540" height="405" style="display:block" alt="">
+      </div>
+      <div id="setline"><span id="setspan">exposure <b>−2.0</b> · temperature <b>4200 K</b> · contrast <b>0.75</b></span></div>
+    </div>
+
+    <div class="scene" id="proof">
+      <div class="ptitle fade" id="proofT" style="top:96px">Only the light changes.</div>
+      <div class="card" id="proofcard" style="left:580px;top:188px;width:762px">
+        <div class="rh"><i></i>observation.images.top · episode 0</div>
+        <div style="position:relative;width:760px;height:570px">
+          <canvas class="ft" id="proofcv" width="760" height="570"></canvas>
+          <div class="pill" style="left:16px;top:16px">Recorded</div>
+          <div class="pill" style="right:16px;top:16px">Relit</div>
+        </div>
+      </div>
+      <div class="card fade" id="strip" style="left:580px;top:828px;width:762px;height:92px">
+        <div class="lab">actions · episode 0</div>
+        <svg id="stripsvg" width="760" height="92"></svg>
+      </div>
+    </div>
+  </section>
+
+  <div id="subs"><div class="pill2 ink" id="subpill"></div></div>
+</div>
+
+<div id="dev"><button id="devplay">▶</button><input type="range" id="devt" min="0" max="29.1" step="0.033" value="0"><span id="devtl">0.00</span></div>
+
+<script src="timing.js"></script>
+<script src="subs.js"></script>
+<script src="actions.js"></script>
+<script src="wall.js"></script>
+<script>
+/* ============================================================
+   Day to night — stage windows match compute-timing.mjs NOM:
+   hook 0–6.9 · relight –11.5 · proof –16.8 · generate –24.5 · ask –29.1
+   Quiet motion, as in the RL runs cut: straight cuts between scenes, fades,
+   wipes that reveal the augmented footage, one typed settings line.
+   ============================================================ */
+const DUR = 29.1;
+const W = {hook:[0,6.9], rel:[6.9,11.5], proof:[11.5,16.8], gen:[16.8,24.5], ask:[24.5,29.1]};
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp=(a,b,x)=>a+(b-a)*x;
+const P=(t,a,b)=>clamp((t-a)/(b-a),0,1);
+const cubicOut=x=>1-Math.pow(1-x,3);
+const cubicInOut=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const pad=(n,w=2)=>String(n).padStart(w,'0');
+const $=id=>document.getElementById(id);
+const svgEl=n=>document.createElementNS('http://www.w3.org/2000/svg',n);
+
+/* ---------- timing bridge ---------- */
+const TM=window.TIMING||{};
+const WD=(id,w,k=0)=>{const ws=((TM.words||{})[id]||[]).filter(x=>x[0].replace(/[^A-Za-z']/g,'').toLowerCase()===w);return ws[k]?ws[k][1]:null};
+const SUBS=window.SUBS||[];
+
+function fadeIn(el,t,t0,{dur=0.32,rise=10,out=null}={}){
+  const e=cubicOut(P(t,t0,t0+dur)), o=out?1-P(t,out[0],out[1]):1;
+  el.style.opacity=e*o; el.style.transform=`translateY(${lerp(rise,0,e)}px)`;
+}
+
+/* ---------- footage: frame sequences drawn on canvases (deterministic) ---------- */
+const SHOTS={hook_day:[90,15],mech_day:[90,15],mech_relit:[90,15],proof_rec:[90,15],proof_relit:[90,15],
+  rng_distract_in:[75,15],rng_distract_out:[75,15],rng_bg_in:[45,15],rng_bg_out:[45,15],rng_surf_in:[75,15],rng_surf_out:[75,15]};
+const WALL=['w_ds_tungsten_top','w_api_top','w_gen_top','w_distract','w_bg_high',
+            'w_spot_high','w_surf_left','w_ds_daylight_top','w_api_left','w_gen_left',
+            'w_bg_left','w_spot_right','w_surf_right','w_ds_tungsten_left','w_ds_daylight_left'];
+const WN=window.WALLN||{}; WALL.forEach(w=>SHOTS[w]=[WN[w]||30,12]);
+const IMG={}, preload=[];
+const load=src=>{const im=new Image();preload.push(new Promise(r=>{im.onload=r;im.onerror=r}));im.src=src;return im};
+for(const [s,[n]] of Object.entries(SHOTS)) IMG[s]=[...Array(n)].map((_,i)=>load(`assets/${s}/f_${pad(i+1,4)}.jpg`));
+const LIVE=load('assets/live_top_880.jpg');
+const frameOf=(s,local,loop=false)=>{const [n,fps]=SHOTS[s];let i=Math.floor(Math.max(0,local)*fps+1e-6);i=loop?i%n:clamp(i,0,n-1);return IMG[s][i]};
+// draw one frame, or two with a vertical wipe at fraction w (left = b, right = a); mirror it as the CSS background
+function draw(cv,a,b=null,w=0,{zoom=1,line=true}={}){
+  const g=cv.getContext('2d'), W_=cv.width, H_=cv.height;
+  const dz=(im)=>{const zw=W_*zoom, zh=H_*zoom; g.drawImage(im,(W_-zw)/2,(H_-zh)/2,zw,zh)};
+  dz(a);
+  if(b&&w>0){g.save();g.beginPath();g.rect(0,0,W_*w,H_);g.clip();dz(b);g.restore();
+    if(line&&w<1){g.fillStyle='rgba(255,255,255,.92)';g.fillRect(Math.round(W_*w)-1.5,0,3,H_)}}
+  cv.style.backgroundImage=`url(${((b&&w>=0.5)?b:a).getAttribute('src')})`;
+}
+
+/* ---------- wall of every augmented clip ---------- */
+const WALLC=[]; {
+  const tw=336, th=252, gap=16, x0=(1920-(5*tw+4*gap))/2, y0=(1080-(3*th+2*gap))/2;
+  WALL.forEach((s,i)=>{const c=document.createElement('canvas');c.width=tw;c.height=th;c.className='ft';
+    c.style.left=(x0+(i%5)*(tw+gap))+'px';c.style.top=(y0+Math.floor(i/5)*(th+gap))+'px';$('wall').appendChild(c);WALLC.push([c,s])});
+}
+
+/* ---------- typed settings line (the planner's real top-camera settings) ---------- */
+function typify(el){const out=[];const walk=n=>{[...n.childNodes].forEach(c=>{if(c.nodeType===3){const f=document.createDocumentFragment();
+  for(const ch of c.textContent){if(ch===' '){f.appendChild(document.createTextNode(ch));continue}const s=document.createElement('span');s.className='c';s.textContent=ch;f.appendChild(s);out.push(s)}
+  c.replaceWith(f)}else walk(c)})};walk(el);return out}
+const SET=typify($('setspan'));
+const typeTo=(sp,t,t0,t1)=>{const k=Math.floor(P(t,t0,t1)*sp.length+1e-6);sp.forEach((s,i)=>s.style.opacity=i<k?1:0)};
+
+/* ---------- action strip: episode 0's recorded actions, the same 6 s as the clip ---------- */
+const ACT=window.ACTIONS||{t:[0,6],joints:[]};
+const SW=760, SH=92, PADX=22, TOP=34, BOT=12;
+const playhead=svgEl('line'); {
+  const svg=$('stripsvg'), cols=['#141414','#6b6b6b','#b0b0b0'];
+  ACT.joints.forEach((j,k)=>{const v=j.values, lo=Math.min(...v), hi=Math.max(...v), p=svgEl('polyline');
+    p.setAttribute('points',v.map((y,i)=>`${(PADX+ACT.t[i]/6*(SW-2*PADX)).toFixed(1)},${(TOP+(1-(y-lo)/((hi-lo)||1))*(SH-TOP-BOT)).toFixed(1)}`).join(' '));
+    p.setAttribute('fill','none');p.setAttribute('stroke',cols[k]);p.setAttribute('stroke-width',k?1.6:2.2);p.setAttribute('stroke-linejoin','round');svg.appendChild(p)});
+  playhead.setAttribute('y1',8);playhead.setAttribute('y2',SH-6);playhead.setAttribute('stroke','#3b82f6');playhead.setAttribute('stroke-width',2);svg.appendChild(playhead);
+}
+
+window.READY=Promise.all([document.fonts.ready,...preload]);
+
+/* ---------- subtitles: only where the words are not already on screen ---------- */
+const SUB_IDS=new Set(['vo1','vo2','vo3']);
+function drawSubs(t,theme){
+  const pill=$('subpill');
+  const c=SUBS.find(c=>SUB_IDS.has(c.id)&&t>=c.s-0.1&&t<=c.e+0.1);
+  if(!c){pill.style.opacity=0;return}
+  if(pill.textContent!==c.text) pill.textContent=c.text;
+  pill.style.opacity=Math.min(cubicOut(P(t,c.s-0.1,c.s+0.12)),1-P(t,c.e-0.02,c.e+0.1));
+  pill.className='pill2 '+theme;
+}
+
+/* ============================================================ SEEK */
+function seek(t){
+  t=clamp(t,0,DUR);
+  const inRel=t>=W.rel[0]&&t<W.rel[1], inProof=t>=W.proof[0]&&t<W.proof[1], inPaper=inRel||inProof;
+  $('ink').style.visibility=inPaper?'hidden':'visible';
+  $('paper').style.visibility=inPaper?'visible':'hidden';
+  $('rel').style.visibility=inRel?'visible':'hidden';
+  $('proof').style.visibility=inProof?'visible':'hidden';
+  $('hook').style.visibility=!inPaper&&t<W.hook[1]?'visible':'hidden';
+  $('gen').style.visibility=!inPaper&&t>=W.gen[0]&&t<W.gen[1]?'visible':'hidden';
+  $('ask').style.visibility=!inPaper&&t>=W.ask[0]?'visible':'hidden';
+  $('gtb').setAttribute('seed',1+Math.floor(t*8)%997);
+
+  /* ---- hook: daylight footage, then the live evening frame on "evening" ---- */
+  if(t<W.hook[1]){
+    const l1=WD('vo0a','we')??0.25, l2=WD('vo0b','by')??3.3, cut=(WD('vo0b','evening')??3.6)-0.05;
+    fadeIn($('tl1'),t,l1-0.04,{dur:0.16,rise:0});
+    fadeIn($('tl2'),t,l2-0.04,{dur:0.16,rise:0});
+    if(t>l2) $('tl1').style.opacity=lerp(1,0.38,P(t,l2,l2+0.2));
+    const cv=$('hookcv');
+    if(t<cut) draw(cv,frameOf('hook_day',t),null,0,{zoom:1.0+0.012*t});
+    else draw(cv,LIVE,null,0,{zoom:lerp(1.1,1.03,cubicOut(P(t,cut,cut+0.35)))+0.012*(t-cut)});   // quick punch-in on the cut
+    const ev=t>=cut; $('hb').textContent=ev?'81':'166'; $('hw').textContent=ev?'1.55':'1.03';
+  }
+
+  /* ---- relight: the clip wipes from recorded to relit, then the reference photo and settings ---- */
+  if(inRel){
+    const L=t-W.rel[0];
+    fadeIn($('relT'),t,W.rel[0]-0.2,{dur:0.2});
+    const w0=(WD('vo1','relights')??7.53)-0.05, w=cubicInOut(P(t,w0,w0+0.75));
+    draw($('relcv'),frameOf('mech_day',L),frameOf('mech_relit',L),w);
+    fadeIn($('refcard'),t,(WD('vo1','match')??8.67)-0.15,{rise:14});
+    const s0=(WD('vo1','photo')??9.06); typeTo(SET,t,s0,s0+1.1);
+  }
+
+  /* ---- proof: recorded | relit split, same frames; the recorded actions with a playhead ---- */
+  if(inProof){
+    const L=t-W.proof[0];
+    fadeIn($('proofT'),t,W.proof[0]-0.2,{dur:0.2});
+    const split=0.5+0.2*Math.sin(L*1.75-0.6);
+    draw($('proofcv'),frameOf('proof_relit',L),frameOf('proof_rec',L),split);
+    fadeIn($('strip'),t,(WD('vo2','every')??13.9)-0.2,{rise:12});
+    const x=(PADX+clamp(L,0,6)/6*(SW-2*PADX)).toFixed(1); playhead.setAttribute('x1',x); playhead.setAttribute('x2',x);
+  }
+
+  /* ---- generate: three real before → after clips, each turning on its word ---- */
+  if(t>=W.gen[0]&&t<W.gen[1]){
+    const L=t-W.gen[0];
+    fadeIn($('genT'),t,W.gen[0]-0.2,{dur:0.2});
+    const cues=[(WD('vo3','distractor')??19.64),(WD('vo3','backgrounds')??21.4),(WD('vo3','surfaces')??22.8)];
+    const pairs=[['rng_distract_in','rng_distract_out'],['rng_bg_in','rng_bg_out'],['rng_surf_in','rng_surf_out']];
+    pairs.forEach(([a,b],k)=>{
+      const tile=$('gt'+k);
+      tile.style.opacity=lerp(0.42,1,cubicOut(P(t,cues[k]-0.15,cues[k]+0.1)))*cubicOut(P(t,W.gen[0]-0.2,W.gen[0]));
+      tile.style.transform='none';
+      fadeIn($('gl'+k),t,cues[k]-0.12,{dur:0.22,rise:8});
+      const w=cubicInOut(P(t,cues[k]+0.02,cues[k]+0.52));
+      const sp=Math.min(1,(SHOTS[a][0]-1)/(SHOTS[a][1]*(W.gen[1]-W.gen[0]+0.3)));
+      draw($('gcv'+k),frameOf(a,L*sp),frameOf(b,L*sp),w);
+    });
+  }
+
+  /* ---- ask: the wall of every augmented clip, the line, then the lockup ---- */
+  if(t>=W.ask[0]){
+    const L=t-W.ask[0];
+    $('wall').style.transform=`scale(${lerp(1.07,1.0,cubicOut(P(L,0,DUR-W.ask[0])))})`;
+    WALLC.forEach(([c,s],i)=>{const sp=Math.min(1,(SHOTS[s][0]-1)/(SHOTS[s][1]*(DUR-W.ask[0]+0.1)));draw(c,frameOf(s,L*sp));
+      const e=cubicOut(P(t,W.ask[0]-0.2+0.035*i,W.ask[0]+0.05+0.035*i));            // tiles cascade in
+      c.style.opacity=e; c.style.transform=`scale(${lerp(0.94,1,e)})`;});
+    $('wall').style.opacity=lerp(0.55,0.32,P(t,DUR-1.6,DUR-1.2));
+    const out=[DUR-1.45,DUR-1.15];
+    fadeIn($('ah1'),t,(WD('vo4','augment')??24.9)-0.05,{dur:0.3,rise:0,out});
+    fadeIn($('endcard'),t,DUR-1.2,{dur:0.4,rise:10});
+  }
+  drawSubs(t,inPaper?'paper':'ink');
+}
+window.seek=seek; window.DUR=DUR;
+
+window.STILLS=[
+  {name:'s0-hook-day',      t:2.4},
+  {name:'s0-hook-evening',  t:6.4},
+  {name:'s1-relight',       t:10.9},
+  {name:'s2-proof',         t:15.9},
+  {name:'s3-generate',      t:24.1},
+  {name:'s4-ask',           t:27.0},
+  {name:'s4-endcard',       t:29.0},
+];
+
+if(location.search.includes('dev')){
+  const dev=$('dev');dev.style.display='flex';const r=$('devt'),l=$('devtl');let playing=false,last=0;
+  const setT=v=>{r.value=v;l.textContent=(+v).toFixed(2);seek(+v)};
+  r.addEventListener('input',()=>setT(r.value));
+  $('devplay').addEventListener('click',()=>{playing=!playing;last=performance.now();
+    const step=n=>{if(!playing)return;const dt=(n-last)/1000;last=n;let v=+r.value+dt;if(v>DUR){v=0}setT(v);requestAnimationFrame(step)};
+    if(playing)requestAnimationFrame(step)});
+  window.READY.then(()=>setT(0));
+} else { window.READY.then(()=>seek(0)); }
+</script>
+</body>
+</html>

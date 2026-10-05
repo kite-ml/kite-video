@@ -1,0 +1,47 @@
+{
+  "voice": {
+    "id": "S9yloMZlqeNpSAJwHNQP",
+    "name": "Luigi"
+  },
+  "model": "eleven_turbo_v2",
+  "one_take": true,
+  "segments": [
+    {
+      "id": "vo0a",
+      "slotStart": 0,
+      "duration": 2.689297,
+      "text": "We recorded our robot's demos on a bright morning."
+    },
+    {
+      "id": "vo0b",
+      "slotStart": 0,
+      "duration": 2.873084,
+      "text": "By evening, its cameras saw a different scene."
+    },
+    {
+      "id": "vo1",
+      "slotStart": 0,
+      "duration": 3.511791,
+      "text": "Kite relights your dataset to match a photo from each camera."
+    },
+    {
+      "id": "vo2",
+      "slotStart": 0,
+      "duration": 4.21619,
+      "text": "Only the light changes, so every recorded action still lines up."
+    },
+    {
+      "id": "vo3",
+      "slotStart": 0,
+      "duration": 6.461905,
+      "text": "Kite also generates new scenes: distractor objects, new backgrounds, new surfaces."
+    },
+    {
+      "id": "vo4",
+      "slotStart": 0,
+      "duration": 2.453039,
+      "text": "Augment your dataset with the Kite API."
+    }
+  ],
+  "tempo": 1.1
+}
